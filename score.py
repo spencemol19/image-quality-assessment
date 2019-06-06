@@ -62,7 +62,11 @@ def main(args):
 
         iqa_weights = IQA_TYPES['aesthetic']
 
+        print('Assessment Type: aesthetic\n\n')
+
         args = args[:assess_ind] + args[assess_ind + 1:]
+    else:
+        print('Assessment Type: technical\n\n')
 
     # use gpu for machine spec (optional arg)
     if '-g' in [a.lower() for a in args]:
