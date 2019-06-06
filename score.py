@@ -37,7 +37,7 @@ def get_predict_cli_str(weights_file=IQA_WEIGHTS):
         pwd = os.path.abspath(os.path.curdir)
         weights_file = weights_file.format(pwd=pwd)
 
-    return ['./predict', '--docker-image', 'nima-cpu', '--base-model-name', 'MobileNet', '--weights-file',
+    return ['./predict', '--docker-image', 'nima-gpu', '--base-model-name', 'MobileNet', '--weights-file',
             weights_file,
             '--image-source', '']
 
