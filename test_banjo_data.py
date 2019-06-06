@@ -4,7 +4,7 @@ import os
 
 DATA_PATH = './banjo_data'
 
-THRESHOLDS = [3, 5, 7]
+THRESHOLDS = [3, 5, 7, 10]
 
 
 def main():
