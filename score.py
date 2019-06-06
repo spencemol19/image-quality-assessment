@@ -14,6 +14,23 @@ IQA_TYPES = {
 
 IQA_WEIGHTS = IQA_TYPES['technical']
 
+'''
+    SAMPLE CL CALL:
+    
+    python score.py -f /home/spencer/quality/image-quality-assessment/banjo_data/blur-detection-set {-a -g} -t 3 5 7 10
+    
+    ANY -[a-z] args are also accepted as -[A-Z]
+    
+    {} - indicates optional args segments
+    
+    -a = Use Aesthetic NIMA IQA (not Technical)
+    
+    -g = Use GPU docker image (not CPU)
+    
+    MUST use -f first and -t last followed by their respective args values in script execution call
+    
+'''
+
 
 def check_within_range(s, prev, threshold_val):
     return prev < s <= threshold_val
@@ -30,31 +47,34 @@ def get_predict_cli_str(weights_file=IQA_WEIGHTS):
 
 
 def main(args):
+    '''
+    consume CL args, and then iterate through directories in CL args applying weights and machine type as specified (or default)
+    :param args:
+    :return:
+    '''
     global MACH_TYPE
     global IQA_WEIGHTS
     threshold_vals = []
 
-    # check for assessment type (optional)
-    if '-a' in args:
-        assess_ind = args.index('-a')
+    # use aesthetic for IQA type (optional arg)
+    if '-a' in [a.lower() for a in args]:
+        assess_ind = [a.lower() for a in args].index('-a')
 
-        if args[assess_ind + 1].lower() == 'aesthetic':
-            IQA_WEIGHTS = IQA_TYPES['aesthetic']
+        IQA_WEIGHTS = IQA_TYPES['aesthetic']
 
-        args = args[:assess_ind] + args[assess_ind + 2:]
+        args = args[:assess_ind] + args[assess_ind + 1:]
 
-    # check for machine spec (optional)
-    if '-m' in args:
-        mach_ind = args.index('-m')
+    # use gpu for machine spec (optional arg)
+    if '-g' in [a.lower() for a in args]:
+        mach_ind = [a.lower() for a in args].index('-g')
 
-        if args[mach_ind + 1].lower() == 'gpu':
-            MACH_TYPE = 'gpu'
+        MACH_TYPE = 'gpu'
 
-        args = args[:mach_ind] + args[mach_ind + 2:]
+        args = args[:mach_ind] + args[mach_ind + 1:]
 
     # check for threshold(s) REQUIRED
-    if '-t' in args:
-        threshold_ind = args.index('-t')
+    if '-t' in [a.lower() for a in args]:
+        threshold_ind = [a.lower() for a in args].index('-t')
         threshold_vals = sorted([float(v) for v in args[threshold_ind + 1:]])
         args = args[:threshold_ind]
 
