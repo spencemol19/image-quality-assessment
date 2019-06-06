@@ -17,7 +17,7 @@ def main():
 
     exec_base.extend([str(t) for t in THRESHOLDS])
 
-    exec_base.extend(['>', 'banjo_data_model_performance.%d.txt' % int(time.time())])
+    # exec_base.extend(['>', 'banjo_data_model_performance.%d.txt' % int(time.time())])
 
     subprocess.call(exec_base)
 
