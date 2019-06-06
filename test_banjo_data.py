@@ -17,9 +17,12 @@ def main():
 
     exec_base.extend([str(t) for t in THRESHOLDS])
 
-    # exec_base.extend(['>', 'banjo_data_model_performance.%d.txt' % int(time.time())])
+    out_file = './banjo-test/banjo_data_model_performance.%d.txt' % int(time.time())
 
-    subprocess.call(exec_base)
+    testing_output = subprocess.check_output(exec_base).decode('utf-8', errors='ignore')
+
+    with open(out_file, 'w') as out_fi:
+        out_fi.write(testing_output)
 
 
 if __name__ == '__main__':
