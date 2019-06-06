@@ -5,8 +5,6 @@ import time
 import sys
 import os
 
-MACH_TYPE = 'cpu'
-
 IQA_TYPES = {
     'aesthetic': '{pwd}/models/MobileNet/weights_mobilenet_aesthetic_0.07.hdf5',
     'technical': '{pwd}/models/MobileNet/weights_mobilenet_technical_0.11.hdf5'
@@ -17,15 +15,13 @@ IQA_WEIGHTS = IQA_TYPES['technical']
 '''
     SAMPLE CL CALL:
     
-    python score.py -f /home/spencer/quality/image-quality-assessment/banjo_data/blur-detection-set {-a -g} -t 3 5 7 10
+    python score.py -f /home/spencer/quality/image-quality-assessment/banjo_data/blur-detection-set {-a} -t 3 5 7 10
     
     ANY -[a-z] args are also accepted as -[A-Z]
     
     {} - indicates optional args segments
     
     -a = Use Aesthetic NIMA IQA (not Technical)
-    
-    -g = Use GPU docker image (not CPU)
     
     MUST use -f first and -t last followed by their respective args values in script execution call
     
@@ -36,12 +32,12 @@ def check_within_range(s, prev, threshold_val):
     return prev < s <= threshold_val
 
 
-def get_predict_cli_str(weights_file=IQA_WEIGHTS, mach_type=MACH_TYPE):
+def get_predict_cli_str(weights_file=IQA_WEIGHTS):
     if '{pwd}' in weights_file:
         pwd = os.path.abspath(os.path.curdir)
         weights_file = weights_file.format(pwd=pwd)
 
-    return ['./predict', '--docker-image', 'nima-%s' % mach_type, '--base-model-name', 'MobileNet', '--weights-file',
+    return ['./predict', '--docker-image', 'nima-cpu', '--base-model-name', 'MobileNet', '--weights-file',
             weights_file,
             '--image-source', '']
 
@@ -53,7 +49,6 @@ def main(args):
     :return:
     '''
     iqa_weights = IQA_WEIGHTS
-    mach_type = 'cpu'
     threshold_vals = []
 
     # use aesthetic for IQA type (optional arg)
@@ -68,14 +63,6 @@ def main(args):
     else:
         print('Assessment Type: technical\n\n')
 
-    # use gpu for machine spec (optional arg)
-    if '-g' in [a.lower() for a in args]:
-        mach_ind = [a.lower() for a in args].index('-g')
-
-        mach_type = 'gpu'
-
-        args = args[:mach_ind] + args[mach_ind + 1:]
-
     # check for threshold(s) REQUIRED
     if '-t' in [a.lower() for a in args]:
         threshold_ind = [a.lower() for a in args].index('-t')
@@ -83,7 +70,7 @@ def main(args):
         args = args[:threshold_ind]
 
     if args[0].lower().replace('-', '') == 'f':
-        cli_exec_str = get_predict_cli_str(weights_file=iqa_weights, mach_type=mach_type)
+        cli_exec_str = get_predict_cli_str(weights_file=iqa_weights)
 
         for dir in args[1:]:
             if os.path.isdir(dir):
