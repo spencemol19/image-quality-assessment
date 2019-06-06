@@ -38,6 +38,7 @@ def main(args):
                 cli_exec_str[-1] = dir
 
                 raw_output = subprocess.check_output(cli_exec_str).decode('utf-8', errors='ignore')
+                print(json.dumps(raw_output))
                 data_segment = raw_output.split('step')[1]
                 output = json.loads(data_segment)
 
