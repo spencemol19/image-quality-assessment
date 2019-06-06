@@ -36,12 +36,12 @@ def check_within_range(s, prev, threshold_val):
     return prev < s <= threshold_val
 
 
-def get_predict_cli_str(weights_file=IQA_WEIGHTS):
+def get_predict_cli_str(weights_file=IQA_WEIGHTS, mach_type=MACH_TYPE):
     if '{pwd}' in weights_file:
         pwd = os.path.abspath(os.path.curdir)
         weights_file = weights_file.format(pwd=pwd)
 
-    return ['./predict', '--docker-image', 'nima-%s' % MACH_TYPE, '--base-model-name', 'MobileNet', '--weights-file',
+    return ['./predict', '--docker-image', 'nima-%s' % mach_type, '--base-model-name', 'MobileNet', '--weights-file',
             weights_file,
             '--image-source', '']
 
@@ -52,15 +52,15 @@ def main(args):
     :param args:
     :return:
     '''
-    global MACH_TYPE
-    global IQA_WEIGHTS
+    iqa_weights = IQA_WEIGHTS
+    mach_type = 'cpu'
     threshold_vals = []
 
     # use aesthetic for IQA type (optional arg)
     if '-a' in [a.lower() for a in args]:
         assess_ind = [a.lower() for a in args].index('-a')
 
-        IQA_WEIGHTS = IQA_TYPES['aesthetic']
+        iqa_weights = IQA_TYPES['aesthetic']
 
         args = args[:assess_ind] + args[assess_ind + 1:]
 
@@ -68,7 +68,7 @@ def main(args):
     if '-g' in [a.lower() for a in args]:
         mach_ind = [a.lower() for a in args].index('-g')
 
-        MACH_TYPE = 'gpu'
+        mach_type = 'gpu'
 
         args = args[:mach_ind] + args[mach_ind + 1:]
 
@@ -79,7 +79,7 @@ def main(args):
         args = args[:threshold_ind]
 
     if args[0].lower().replace('-', '') == 'f':
-        cli_exec_str = get_predict_cli_str()
+        cli_exec_str = get_predict_cli_str(weights_file=iqa_weights, mach_type=mach_type)
 
         for dir in args[1:]:
             if os.path.isdir(dir):
