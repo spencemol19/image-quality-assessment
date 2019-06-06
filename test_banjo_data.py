@@ -19,7 +19,7 @@ def main():
 
     out_file = './banjo-test/banjo_data_model_performance.%d.txt' % int(time.time())
 
-    testing_output = subprocess.check_output(exec_base).decode('utf-8', errors='ignore')
+    testing_output = subprocess.check_output(exec_base).decode('utf-8', errors='ignore').strip()
 
     with open(out_file, 'w') as out_fi:
         out_fi.write(testing_output)
