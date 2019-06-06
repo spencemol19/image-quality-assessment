@@ -38,7 +38,12 @@ def main(args):
                 cli_exec_str[-1] = dir
 
                 raw_output = subprocess.check_output(cli_exec_str).decode('utf-8', errors='ignore')
-                print(json.dumps(raw_output))
+
+                if 'step' not in raw_output:
+                    print('An error occured when running the model against testing dataset from %s' % dir)
+                    print(json.dumps(raw_output))
+                    continue
+
                 data_segment = raw_output.split('step')[1]
                 output = json.loads(data_segment)
 
