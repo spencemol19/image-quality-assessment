@@ -5,24 +5,54 @@ import time
 import sys
 import os
 
+MACH_TYPE = 'cpu'
+
+IQA_TYPES = {
+    'aesthetic': '{pwd}/models/MobileNet/weights_mobilenet_aesthetic_0.07.hdf5',
+    'technical': '{pwd}/models/MobileNet/weights_mobilenet_technical_0.11.hdf5'
+}
+
+IQA_WEIGHTS = IQA_TYPES['technical']
+
 
 def check_within_range(s, prev, threshold_val):
     return prev < s <= threshold_val
 
 
-def get_predict_cli_str(weights_file='{pwd}/models/MobileNet/weights_mobilenet_technical_0.11.hdf5'):
+def get_predict_cli_str(weights_file=IQA_WEIGHTS):
     if '{pwd}' in weights_file:
         pwd = os.path.abspath(os.path.curdir)
         weights_file = weights_file.format(pwd=pwd)
 
-    return ['./predict', '--docker-image', 'nima-cpu', '--base-model-name', 'MobileNet', '--weights-file', weights_file,
+    return ['./predict', '--docker-image', 'nima-%s' % MACH_TYPE, '--base-model-name', 'MobileNet', '--weights-file',
+            weights_file,
             '--image-source', '']
 
 
 def main(args):
+    global MACH_TYPE
+    global IQA_WEIGHTS
     threshold_vals = []
 
-    # check for threshold(s)
+    # check for assessment type (optional)
+    if '-a' in args:
+        assess_ind = args.index('-a')
+
+        if args[assess_ind + 1].lower() == 'aesthetic':
+            IQA_WEIGHTS = IQA_TYPES['aesthetic']
+
+        args = args[:assess_ind] + args[assess_ind + 2:]
+
+    # check for machine spec (optional)
+    if '-m' in args:
+        mach_ind = args.index('-m')
+
+        if args[mach_ind + 1].lower() == 'gpu':
+            MACH_TYPE = 'gpu'
+
+        args = args[:mach_ind] + args[mach_ind + 2:]
+
+    # check for threshold(s) REQUIRED
     if '-t' in args:
         threshold_ind = args.index('-t')
         threshold_vals = sorted([float(v) for v in args[threshold_ind + 1:]])
