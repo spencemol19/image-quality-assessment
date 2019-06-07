@@ -73,6 +73,7 @@ def main(args):
                 for idx, _class in enumerate(raw_classes):
                     idx += 1
                     data_dirs = [os.path.join(DATA_PATH, d) for d in _class]
+                    data_dirs = [d for d in data_dirs if os.path.isdir(d)]
                     c_args = args[:config_idx] + ['-s', '-c', str(idx)]
                     run_model_test_batch(c_args, data_dirs)
 
