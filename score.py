@@ -1,5 +1,6 @@
 import subprocess
 import statistics
+import numpy as np
 import json
 import time
 import sys
@@ -115,6 +116,9 @@ def main(args):
 
                 print('\nMean: %f' % (sum(aggr_scores) / len(aggr_scores)))
                 print('\nStandard deviation: %f\n' % statistics.stdev(aggr_scores))
+
+                hist = np.histogram(aggr_scores)
+                print('\nHistogram: ', hist)
 
 
 if __name__ == '__main__':
