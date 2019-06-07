@@ -32,10 +32,15 @@ def run_model_test_batch(args, data_dirs=None):
     if '-a' in lower_args:
         exec_base.append('-a')
 
+    # pass combine flag through to generate svm data in one line
+    if '--combine' in lower_args:
+        exec_base.append(['--combine', lower_args[lower_args.index('--combine')+1]])
+
     # if silent flag
     if '-s' in lower_args:
         is_silent = True
         exec_base.append('-s')
+
 
     if '-c' in lower_args:
         base_idx = lower_args.index('-c')
@@ -69,7 +74,6 @@ def main(args):
             with open(config_file) as config_src:
                 raw_classes = json.load(config_src)
                 for idx, _class in enumerate(raw_classes):
-                    idx += 1
                     data_dirs = [os.path.join(DATA_PATH, d) for d in _class]
                     data_dirs = [d for d in data_dirs if os.path.isdir(d)]
                     c_args = args[:config_idx] + ['-s', '-c', str(idx)]

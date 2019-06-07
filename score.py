@@ -12,9 +12,9 @@ IQA_TYPES = {
 }
 
 SVM_CLASS_MAP = {
-    1: 'high',
-    2: 'medium',
-    3: 'low'
+    0: 'high',
+    1: 'medium',
+    2: 'low'
 }
 
 IQA_WEIGHTS = IQA_TYPES['technical']
@@ -22,7 +22,7 @@ IQA_WEIGHTS = IQA_TYPES['technical']
 '''
     SAMPLE CL CALL:
     
-    python score.py -f /home/spencer/quality/image-quality-assessment/banjo_data/blur-detection-set {-a -c 1/2/3 -s} -t 3 5 7 10
+    python score.py -f /home/spencer/quality/image-quality-assessment/banjo_data/blur-detection-set {-a -c >=0 -s --combine svm} -t 3 5 7 10
     
     ANY -[a-z] args are also accepted as -[A-Z]
     
@@ -31,6 +31,7 @@ IQA_WEIGHTS = IQA_TYPES['technical']
     -a = Use Aesthetic NIMA IQA (not Technical)
     -c = SVM Class (1+)
     -s = "Silent" mode to not output basic statistics for each processed dataset
+    --combine {file_name_wo_ext} = combine different svm class score outputs into one csv file
     
     MUST use -f first and -t last followed by their respective args values in script execution call
     
@@ -51,6 +52,10 @@ def get_predict_cli_str(weights_file=IQA_WEIGHTS):
             '--image-source', '']
 
 
+def get_lower_args(args):
+    return [a.lower() for a in args]
+
+
 def main(args):
     '''
     consume CL args, and then iterate through directories in CL args applying weights and machine type as specified (or default)
@@ -61,10 +66,11 @@ def main(args):
     threshold_vals = []
     svm_class = -1
     is_silent = False
+    svm_csv_name = ''
 
     # class arg
-    if '-c' in [a.lower() for a in args]:
-        class_ind = [a.lower() for a in args].index('-c')
+    if '-c' in get_lower_args(args):
+        class_ind = get_lower_args(args).index('-c')
 
         try:
             svm_class = int(args[class_ind + 1])
@@ -73,17 +79,25 @@ def main(args):
 
         args = args[:class_ind] + args[class_ind + 2:]
 
+    # comb arg + file to combine data outputs in
+    if '--combine' in get_lower_args(args):
+        comb_ind = get_lower_args(args).index('--combine')
+
+        svm_csv_name = args[comb_ind + 1].replace('.csv', '')
+
+        args = args[:comb_ind] + args[comb_ind + 2:]
+
     # run silently arg ( will not show stats for given dataset folder(s) )
-    if '-s' in [a.lower() for a in args]:
-        assess_ind = [a.lower() for a in args].index('-s')
+    if '-s' in get_lower_args(args):
+        assess_ind = get_lower_args(args).index('-s')
 
         is_silent = True
 
         args = args[:assess_ind] + args[assess_ind + 1:]
 
     # use aesthetic for IQA type (optional arg)
-    if '-a' in [a.lower() for a in args]:
-        assess_ind = [a.lower() for a in args].index('-a')
+    if '-a' in get_lower_args(args):
+        assess_ind = get_lower_args(args).index('-a')
 
         iqa_weights = IQA_TYPES['aesthetic']
 
@@ -94,8 +108,8 @@ def main(args):
         print('Assessment Type: technical\n\n')
 
     # check for threshold(s) REQUIRED
-    if '-t' in [a.lower() for a in args]:
-        threshold_ind = [a.lower() for a in args].index('-t')
+    if '-t' in get_lower_args(args):
+        threshold_ind = get_lower_args(args).index('-t')
         try:
             threshold_vals = sorted([float(v) for v in args[threshold_ind + 1:]])
         except:
@@ -104,6 +118,8 @@ def main(args):
         args = args[:threshold_ind]
 
     dir_counter = 0
+
+    svm_term = SVM_CLASS_MAP.get(svm_class) or ''
 
     if args[0].lower().replace('-', '') == 'f':
         cli_exec_str = get_predict_cli_str(weights_file=iqa_weights)
@@ -158,15 +174,18 @@ def main(args):
 
                     print('\nHistogram: ', hist)
 
-                if svm_class > -1:
-                    svm_term = SVM_CLASS_MAP[svm_class]
-                    with open('svm_data/{quality}.csv'.format(quality=svm_term), 'a') as csv_src:
+                if svm_term:
+                    svm_path = '{name}.csv'.format(
+                        name=svm_csv_name) if svm_csv_name else 'svm_data/{quality}.csv'.format(quality=svm_term)
+                    with open(svm_path, 'a') as csv_src:
                         csv_src.writelines(['%s,%s\n' % (s, svm_class) for s in aggr_scores])
+
+                    print('\nUpdated %s\n' % svm_path)
 
                     dir_counter += len(aggr_scores)
 
         if dir_counter > 0:
-            print('Classified %d score for quality class: %s' % (dir_counter, svm_term))
+            print('\nClassified %d score for quality class: %s\n' % (dir_counter, svm_term))
 
 
 if __name__ == '__main__':
