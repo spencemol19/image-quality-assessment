@@ -73,7 +73,8 @@ def main(args):
     if args[0].lower().replace('-', '') == 'f':
         cli_exec_str = get_predict_cli_str(weights_file=iqa_weights)
 
-        for dir in args[1:]:
+        for dir in [os.path.abspath(d) for d in args[1:]]:
+
             if os.path.isdir(dir):
                 start_time = time.time()
 
