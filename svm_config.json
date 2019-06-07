@@ -1,0 +1,14 @@
+[
+  [
+    "DIV2K_valid_HR",
+    "relaxed"
+  ],
+  [
+    "udot",
+    "DNIM_day"
+  ],
+  [
+    "DNIM_night",
+    "banjo_data/DIV2K_train_LR_x8"
+  ]
+]
