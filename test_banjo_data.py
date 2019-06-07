@@ -34,7 +34,7 @@ def run_model_test_batch(args, data_dirs=None):
 
     # pass combine flag through to generate svm data in one line
     if '--combine' in lower_args:
-        exec_base.append(['--combine', lower_args[lower_args.index('--combine')+1]])
+        exec_base.extend(['--combine', lower_args[lower_args.index('--combine')+1]])
 
     # if silent flag
     if '-s' in lower_args:
