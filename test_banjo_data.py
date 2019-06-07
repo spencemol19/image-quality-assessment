@@ -48,9 +48,7 @@ def run_model_test_batch(args, data_dirs=None):
 
     exec_base.extend([str(t) for t in THRESHOLDS])
 
-    print(exec_base)
-
-    return
+    print('\nExecution basis: %s\n' % exec_base)
 
     if is_silent:
         subprocess.call(exec_base)
