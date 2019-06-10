@@ -3,6 +3,7 @@ import statistics
 import numpy as np
 import json
 import time
+import cv2
 import sys
 import os
 
@@ -54,6 +55,15 @@ def get_predict_cli_str(weights_file=IQA_WEIGHTS):
 
 def get_lower_args(args):
     return [a.lower() for a in args]
+
+
+def map_score_image_res(score, fi_path):
+    dims = cv2.imread(fi_path).shape
+    return score, dims[0] * dims[1]
+
+
+def map_scores_res(outputs):
+    return list(map(map_score_image_res, outputs))
 
 
 def main(args):
@@ -141,11 +151,13 @@ def main(args):
                 data_segment = raw_output.split('step')[1]
                 output = json.loads(data_segment)
 
-                aggr_scores = [s['mean_score_prediction'] for s in output]
-
                 end_time = time.time()
 
+                output = [(o['mean_score_prediction'], os.path.join(dir, '{im_id}.jpg'.format(im_id=o['image_id']))) for
+                          o in output]
+
                 if not is_silent:
+                    aggr_scores = [s for s, fp in output]
                     print('\n%s\n\nprocessed %d in %f s for "%s" data' % (
                         '-' * 60, len(aggr_scores), end_time - start_time, os.path.basename(dir)))
 
@@ -177,12 +189,13 @@ def main(args):
                 if svm_term:
                     svm_path = '{name}.csv'.format(
                         name=svm_csv_name) if svm_csv_name else 'svm_data/{quality}.csv'.format(quality=svm_term)
+                    multi_feature_out = map_scores_res(output)
                     with open(svm_path, 'a') as csv_src:
-                        csv_src.writelines(['%s,%s\n' % (s, svm_class) for s in aggr_scores])
+                        csv_src.writelines(['%s,%d,%s\n' % (s, r, svm_class) for s, r in multi_feature_out])
 
                     print('\nUpdated %s\n' % svm_path)
 
-                    dir_counter += len(aggr_scores)
+                    dir_counter += len(output)
 
         if dir_counter > 0:
             print('\nClassified %d score for quality class: %s\n' % (dir_counter, svm_term))
