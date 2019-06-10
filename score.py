@@ -1,6 +1,7 @@
 import subprocess
 import statistics
 import numpy as np
+import math
 import json
 import time
 import cv2
@@ -57,10 +58,14 @@ def get_lower_args(args):
     return [a.lower() for a in args]
 
 
+def get_dpi(dims):
+    return math.sqrt(math.pow(dims[0], 2) + math.pow(dims[1], 2))
+
+
 def map_score_image_res(score_fi_path):
     score, fi_path = score_fi_path
     dims = cv2.imread(fi_path).shape
-    return score, dims[0] * dims[1]
+    return score, get_dpi(dims)
 
 
 def map_scores_res(outputs):
