@@ -57,7 +57,8 @@ def get_lower_args(args):
     return [a.lower() for a in args]
 
 
-def map_score_image_res(score, fi_path):
+def map_score_image_res(score_fi_path):
+    score, fi_path = score_fi_path
     dims = cv2.imread(fi_path).shape
     return score, dims[0] * dims[1]
 
